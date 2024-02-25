@@ -1,14 +1,11 @@
 import { StatusBar } from 'expo-status-bar';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { withAnchorPoint } from 'react-native-anchor-point';
 import { StyleSheet, Text, View, Image, TouchableOpacity, SafeAreaView, Button, Pressable, Animated, Easing } from 'react-native';
 
-export const Level1 = ({setLevel}) => {
+export const Level1 = ({setLevel, ballPosX, setBallPosX, velocityX, setVelocityX, accelerationX, setAccelerationX}) => {
 
     console.log("We are in Level1");
-
-    let velocity = 0;
-    let acceleration = 0;
 
     const Level1Styles = StyleSheet.create({
         main: {
@@ -88,107 +85,12 @@ export const Level1 = ({setLevel}) => {
     });
 
     
-    let ballPos = useRef(new Animated.ValueXY({x: 0, y: 0})).current;
-    let ballAngleRef = useRef(new Animated.Value(0));
+    const ballPosRef = useRef(new Animated.Value(0));
+    const ballAngleRef = useRef(new Animated.Value(0));
 
 
-    let ballInterpolate = ballAngleRef.current.interpolate({
-        inputRange: [0, 1],
-        outputRange: ['0deg', '360deg'],
-    });
 
-    let [ballRotationStyle, setBallRotationStyle] = useState([{
-        transform: [
-            {rotate: ballInterpolate},
-        ],
-      }]);
-
-    const [ballPositionStyle, setBallPositionStyle] = useState([{
-        transform: [
-            {translateX: ballPos.x},
-        ]
-    }]);
-
-    const handlePressRight = () => {
-        stopRotationAnimation();
-        acceleration = 1;
-        setBallRotationStyle ([{
-            transform: [
-                {rotate: chooseInterpolate(acceleration)},
-            ],
-          }]);
-        startRotationAnimation();
-    }
-
-    const handlePressLeft = () => {
-        stopRotationAnimation();
-        acceleration = -1;
-        setBallRotationStyle ([{
-            transform: [
-                {rotate: chooseInterpolate(acceleration)},
-            ],
-          }]);
-        startRotationAnimation();
-    }
-
-    const handlePressOut = () => {
-        // if (velocity > 0) {
-        //     velocity = Math.max(0, velocity - 0.01);
-        //     handlePressOut();
-        // }
-        // else if (velocity < 0) {
-        //     velocity = Math.min(1, velocity + 0.01);
-        //     handlePressOut();
-        // }
-        // acceleration = 0;
-        if (velocity == 0) {
-            acceleration = 0;
-        }
-        else if (velocity > 0) {
-            acceleration = -0.5;
-
-            const decelerate = setInterval(() => {
-                if (velocity <= 0) {
-                    acceleration = 0;
-                    clearInterval(decelerate);
-                }
-            }, 100);
-        }
-        else if (velocity < 0) {
-            acceleration = 0.5;
-    
-            const decelerate = setInterval(() => {
-                if (velocity >= 0) {
-                    acceleration = 0;
-                    clearInterval(decelerate);
-                }
-            }, 100);
-        }
-    }
-
-    const milkContact = () => {
-
-        const cowSpace = {
-            left: ballPos.x._value,
-            right: ballPos.x._value + 163,
-            bottom: 37,
-            top: 200 // + ballLeft.y
-        }
-
-        const milkSpace = {
-            left: 750,
-            right: 810,
-            bottom: 50,
-            top: 170
-        }
-
-        if (cowSpace.right >= milkSpace.left  && cowSpace.left <= milkSpace.right &&
-            cowSpace.bottom <= milkSpace.top && cowSpace.top >= milkSpace.bottom) {
-            //setLevel(2);
-        }
-    }
-
-    const chooseInterpolate = (v) => {
+    const chooseRotationInterpolate = (v) => {
         let newInterpolate = null;
 
         if (v > 0) {
@@ -212,44 +114,202 @@ export const Level1 = ({setLevel}) => {
         return newInterpolate;
     }
 
-    const startPositionAnimation = (x, v, a) => {
-        ballPos.setValue({
-            x: x,
-            y: 0,
-            a: a,
-        })
-        velocity = v + a;
-        Animated.timing(ballPos, {
-            toValue: {
-                x: x + v,
-                y: 0
-            },
-            duration: 10000,
-            easing: Easing.linear,
-            useNativeDriver: true
-        }).start(
-            () => startPositionAnimation(x + v, velocity, acceleration)
-        );
-        milkContact();
+    const ballRotationInterpolate = chooseRotationInterpolate(velocityX);
+
+    const [ballRotationStyle, setBallRotationStyle] = useState([{
+        transform: [
+            {rotate: ballRotationInterpolate},
+        ],
+      }]);
+
+      const choosePositionInterpolate = (v) => {
+        const startX = ballPosX;
+        const endX = startX + v;
+        const result = ballPosRef.current.interpolate({
+            inputRange: [0, 1],
+            outputRange: [startX, endX],
+        });   
+        return result;
     }
-    startPositionAnimation(0, velocity, acceleration);
-    const anim = Animated.loop(Animated.timing(ballAngleRef.current, {
+
+    const updateBallPosX = (v) => {
+        console.log("v: ", v);
+        console.log("ballPosX 1: ", ballPosX);
+        setBallPosX(ballPosX + v);
+        console.log("ballPosX 2: ", ballPosX); 
+    }
+
+    const ballPositionInterpolate = choosePositionInterpolate(velocityX);
+
+    const [ballPositionStyle, setBallPositionStyle] = useState({
+        transform: [
+            {translateX: ballPositionInterpolate},
+        ]
+    });
+
+    const updateBallPositionStyle = () => {
+        updateBallPosX(velocityX);
+        setBallPositionStyle ({
+            transform: [
+                {translateX: choosePositionInterpolate(velocityX)},
+            ],
+        });
+    }
+
+    const handlePressRight = () => {
+        stopRotationAnimation();
+        // stopPosAnimation();
+        console.log("Velocity: ", velocityX);
+        setVelocityX(1);
+        console.log("Velocity2: ", velocityX);
+        setAccelerationX(1);
+        setBallRotationStyle ([{
+            transform: [
+                {rotate: chooseRotationInterpolate(accelerationX)},
+            ],
+          }]);
+        updateBallPositionStyle();
+        startRotationAnimation();
+        // startPosAnimation();
+    }
+
+    const handlePressLeft = () => {
+        stopRotationAnimation();
+        // stopPosAnimation();
+        console.log("Velocity3: ", velocityX);
+        setVelocityX(-1);
+        console.log("Velocity4: ", velocityX);
+        setAccelerationX(-1);
+        setBallRotationStyle ([{
+            transform: [
+                {rotate: chooseRotationInterpolate(accelerationX)},
+            ],
+          }]);
+        updateBallPositionStyle();
+        startRotationAnimation();
+        // startPosAnimation();
+    }
+
+    const handlePressOut = () => {
+        // if (velocity > 0) {
+        //     velocity = Math.max(0, velocity - 0.01);
+        //     handlePressOut();
+        // }
+        // else if (velocity < 0) {
+        //     velocity = Math.min(1, velocity + 0.01);
+        //     handlePressOut();
+        // }
+        // acceleration = 0;
+    //     if (velocityX == 0) {
+    //         acceleration = 0;
+    //     }
+    //     else if (velocity > 0) {
+    //         acceleration = -0.5;
+
+    //         const decelerate = setInterval(() => {
+    //             if (velocity <= 0) {
+    //                 acceleration = 0;
+    //                 clearInterval(decelerate);
+    //             }
+    //         }, 100);
+    //     }
+    //     else if (velocity < 0) {
+    //         acceleration = 0.5;
+    
+    //         const decelerate = setInterval(() => {
+    //             if (velocity >= 0) {
+    //                 acceleration = 0;
+    //                 clearInterval(decelerate);
+    //             }
+    //         }, 100);
+    //     }
+    }
+
+    const milkContact = () => {
+
+        const cowSpace = {
+            left: ballPosRef.current,
+            right: ballPosRef.current + 163,
+            bottom: 37,
+            top: 200 // + ballLeft.y
+        }
+
+        const milkSpace = {
+            left: 750,
+            right: 810,
+            bottom: 50,
+            top: 170
+        }
+
+        if (cowSpace.right >= milkSpace.left  && cowSpace.left <= milkSpace.right &&
+            cowSpace.bottom <= milkSpace.top && cowSpace.top >= milkSpace.bottom) {
+            //setLevel(2);
+        }
+    }
+
+    // const startPositionAnimation = (x, v, a) => {
+    //     ballPos.setValue({
+    //         x: x,
+    //         y: 0,
+    //         a: a,
+    //     })
+    //     velocity = v + a;
+    //     Animated.timing(ballPos, {
+    //         toValue: {
+    //             x: x + v,
+    //             y: 0
+    //         },
+    //         duration: 10000,
+    //         easing: Easing.linear,
+    //         useNativeDriver: true
+    //     }).start(
+    //         () => startPositionAnimation(x + v, velocity, acceleration)
+    //     );
+    //     milkContact();
+    // }
+    // startPositionAnimation(0, velocity, acceleration);
+    const rotationAnim = Animated.loop(Animated.timing(ballAngleRef.current, {
         toValue: 1,
         duration: 1000,
         useNativeDriver: true,
         easing: Easing.linear,
     }));
 
+    const posAnim = Animated.timing(ballPosRef.current, {
+        toValue: 1,
+        duration: 1000,
+        useNativeDriver: true,
+        easing: Easing.linear,
+    });
+
     const startRotationAnimation = () => {
-        anim.start(
+        rotationAnim.start(
             () => {}
         );    
     }
     const stopRotationAnimation = () =>{
         ballAngleRef.current.setValue(0);
-        anim.stop();
+        rotationAnim.stop();
     }
-        
+
+    const startPosAnimation = () => {
+        posAnim.start(
+            () => {
+                console.log("looping posAnim");
+                updateBallPositionStyle();
+                startPosAnimation();
+            }
+        );    
+    }
+    const stopPosAnimation = () =>{
+        ballPosRef.current.setValue(0);
+        posAnim.stop();
+    }
+
+    useEffect(() => {
+        startPosAnimation();
+    }, []);
+
     return (
         <>
         <View style = {Level1Styles.main}>
@@ -259,7 +319,7 @@ export const Level1 = ({setLevel}) => {
             />
         </View>
       
-        <Animated.View style={[Level1Styles.ball]}>
+        <Animated.View style={[Level1Styles.ball, ballPositionStyle]}>
             <Animated.View style={ballRotationStyle}>
                 <Image
                     style = {Level1Styles.character}
