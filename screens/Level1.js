@@ -89,6 +89,8 @@ export const Level1 = ({setLevel}) => {
     const [accelerationX, setAccelerationX] = useState(0);
     const ballPosRef = useRef(new Animated.Value(0));
     const ballAngleRef = useRef(new Animated.Value(0));
+
+    console.log("hi", ballPosX, velocityX);
   
     const chooseRotationInterpolate = () => {
       let newInterpolate = null;
@@ -115,11 +117,11 @@ export const Level1 = ({setLevel}) => {
   }
 
     const ballRotationInterpolate = chooseRotationInterpolate();
-    const [ballRotationStyle, setBallRotationStyle] = useState([{
+    const ballRotationStyle = [{
       transform: [
           {rotate: ballRotationInterpolate},
       ],
-    }]);
+    }];
   
     const choosePositionInterpolate = () => {
       const startX = ballPosX;
@@ -132,17 +134,20 @@ export const Level1 = ({setLevel}) => {
       return result;
   }
     const ballPositionInterpolate = choosePositionInterpolate();
-    const [ballPositionStyle, setBallPositionStyle] = useState({
+    const ballPositionStyle = {
       transform: [
           {translateX: ballPositionInterpolate},
       ]
-  });
+    };
 
     const updateBallPosX = () => {
         console.log("updateBallPosX " + ballPosX + " + " + velocityX + " = " + (ballPosX + velocityX));
         // console.log("v: ", velocityX);
         // console.log("ballPosX 1: ", ballPosX);
-        setBallPosX(ballPosX + velocityX);
+        setBallPosX((oldVal) => {
+            console.log("oldVal", oldVal);
+            return oldVal + 1;
+        });
         // console.log("ballPosX 2: ", ballPosX); 
     }
 
@@ -293,29 +298,15 @@ export const Level1 = ({setLevel}) => {
         startPosAnimation();
         startRotationAnimation();
 
-        setInterval(() => {
+        const animationInterval = setInterval(() => {
             console.log("interval");
             updateBallPosX();
         }, 1000);
+
+        return () => {
+            clearInterval(animationInterval);
+        }
     }, []);
-
-    useEffect(() => {
-        setBallRotationStyle ([{
-            transform: [
-                {rotate: chooseRotationInterpolate()},
-            ],
-        }]);
-        console.log("setting ballposx from setrotationstyle");
-        updateBallPosX();
-    }, [velocityX]);
-
-    useEffect(() => {
-        setBallPositionStyle ({
-            transform: [
-                {translateX: choosePositionInterpolate()},
-            ],
-        });
-    }, [ballPosX, velocityX]);
 
     return (
         <>
