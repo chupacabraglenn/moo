@@ -84,24 +84,24 @@ export const Level1 = ({setLevel}) => {
         }
     });
 
-    const [ballPosX, setBallPosX] = useState(0);
-    const [velocityX, setVelocityX] = useState(0);
-    const [accelerationX, setAccelerationX] = useState(0);
+    const [ballProps, setBallProps] = useState({
+        posX: 0,
+        velocityX: 0,
+        accelerationX: 0
+    });
     const ballPosRef = useRef(new Animated.Value(0));
     const ballAngleRef = useRef(new Animated.Value(0));
-
-    console.log("hi", ballPosX, velocityX);
   
     const chooseRotationInterpolate = () => {
       let newInterpolate = null;
 
-      if (velocityX > 0) {
+      if (ballProps.velocityX > 0) {
           newInterpolate = ballAngleRef.current.interpolate({
               inputRange: [0, 1],
               outputRange: ['0deg', '360deg'],
           })
       }
-      else if (velocityX < 0) {
+      else if (ballProps.velocityX < 0) {
           newInterpolate = ballAngleRef.current.interpolate({
               inputRange: [0, 1],
               outputRange: ['360deg', '0deg'],
@@ -124,8 +124,8 @@ export const Level1 = ({setLevel}) => {
     }];
   
     const choosePositionInterpolate = () => {
-      const startX = ballPosX;
-      const endX = startX + velocityX;
+      const startX = ballProps.posX;
+      const endX = startX + ballProps.velocityX;
       console.log("choosePositionInterpolate", startX, endX);
       const result = ballPosRef.current.interpolate({
           inputRange: [0, 1],
@@ -141,38 +141,17 @@ export const Level1 = ({setLevel}) => {
     };
 
     const updateBallPosX = () => {
-        console.log("updateBallPosX " + ballPosX + " + " + velocityX + " = " + (ballPosX + velocityX));
-        // console.log("v: ", velocityX);
-        // console.log("ballPosX 1: ", ballPosX);
-        setBallPosX((oldVal) => {
-            console.log("oldVal", oldVal);
-            return oldVal + 1;
+        setBallProps((oldVal) => {
+            return {...oldVal, posX: oldVal.posX + oldVal.velocityX};
         });
-        // console.log("ballPosX 2: ", ballPosX); 
     }
 
     const handlePressRight = () => {
-        // stopRotationAnimation();
-        // stopPosAnimation();
-        console.log("Velocity: " + velocityX);
-        setVelocityX(1);
-        console.log("Velocity2: " + velocityX);
-        setAccelerationX(1);
-        // updateBallPosX();
-        // startRotationAnimation();
-        // startPosAnimation();
+        setBallProps({...ballProps, velocityX: 10, accelerationX: 1});
     }
 
     const handlePressLeft = () => {
-        // stopRotationAnimation();
-        // stopPosAnimation();
-        console.log("Velocity3: " + velocityX);
-        setVelocityX(-1);
-        console.log("Velocity4: " + velocityX);
-        setAccelerationX(-1);
-        // updateBallPosX();
-        // startRotationAnimation();
-        // startPosAnimation();
+        setBallProps({...ballProps, velocityX: -10, accelerationX: -1});
     }
 
     const handlePressOut = () => {
@@ -268,30 +247,15 @@ export const Level1 = ({setLevel}) => {
     }));
 
     const startRotationAnimation = () => {
-        console.log("startRotationAnimation");
         rotationAnim.start(
             () => {}
         );    
     }
-    const stopRotationAnimation = () =>{
-        console.log("stopRotationAnimation");
-        ballAngleRef.current.setValue(0);
-        rotationAnim.stop();
-    }
 
     const startPosAnimation = () => {
-        console.log("startPosAnimation");
         posAnim.start(
-            () => {
-                // console.log("looping posAnim");
-                // updateBallPosX();
-                // startPosAnimation();
-            }
+            () => {}
         );    
-    }
-    const stopPosAnimation = () => {
-        ballPosRef.current.setValue(0);
-        posAnim.stop();
     }
 
     useEffect(() => {
@@ -299,7 +263,6 @@ export const Level1 = ({setLevel}) => {
         startRotationAnimation();
 
         const animationInterval = setInterval(() => {
-            console.log("interval");
             updateBallPosX();
         }, 1000);
 
