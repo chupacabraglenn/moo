@@ -211,27 +211,6 @@ export const Level1 = ({setLevel}) => {
         }
     }
 
-    // const startPositionAnimation = (x, v, a) => {
-    //     ballPos.setValue({
-    //         x: x,
-    //         y: 0,
-    //         a: a,
-    //     })
-    //     velocity = v + a;
-    //     Animated.timing(ballPos, {
-    //         toValue: {
-    //             x: x + v,
-    //             y: 0
-    //         },
-    //         duration: 10000,
-    //         easing: Easing.linear,
-    //         useNativeDriver: true
-    //     }).start(
-    //         () => startPositionAnimation(x + v, velocity, acceleration)
-    //     );
-    //     milkContact();
-    // }
-    // startPositionAnimation(0, velocity, acceleration);
     const rotationAnim = Animated.loop(Animated.timing(ballAngleRef.current, {
         toValue: 1,
         duration: 1000,
