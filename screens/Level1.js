@@ -3,9 +3,9 @@ import React, { useEffect, useRef, useState } from 'react';
 import { withAnchorPoint } from 'react-native-anchor-point';
 import { StyleSheet, Text, View, Image, TouchableOpacity, SafeAreaView, Button, Pressable, Animated, Easing } from 'react-native';
 
-export const Level1 = ({setLevel, ballPosX, setBallPosX, velocityX, setVelocityX, accelerationX, setAccelerationX}) => {
+export const Level1 = ({setLevel}) => {
 
-    console.log("We are in Level1");
+    // console.log("We are in Level1");
 
     const Level1Styles = StyleSheet.create({
         main: {
@@ -84,109 +84,89 @@ export const Level1 = ({setLevel, ballPosX, setBallPosX, velocityX, setVelocityX
         }
     });
 
-    
+    const [ballPosX, setBallPosX] = useState(0);
+    const [velocityX, setVelocityX] = useState(0);
+    const [accelerationX, setAccelerationX] = useState(0);
     const ballPosRef = useRef(new Animated.Value(0));
     const ballAngleRef = useRef(new Animated.Value(0));
+  
+    const chooseRotationInterpolate = () => {
+      let newInterpolate = null;
 
+      if (velocityX > 0) {
+          newInterpolate = ballAngleRef.current.interpolate({
+              inputRange: [0, 1],
+              outputRange: ['0deg', '360deg'],
+          })
+      }
+      else if (velocityX < 0) {
+          newInterpolate = ballAngleRef.current.interpolate({
+              inputRange: [0, 1],
+              outputRange: ['360deg', '0deg'],
+          })
+      }
+      else {
+          newInterpolate = ballAngleRef.current.interpolate({
+              inputRange: [0, 1],
+              outputRange: ['0deg', '0deg'],
+          });    
+      }
+      return newInterpolate;
+  }
 
-
-    const chooseRotationInterpolate = (v) => {
-        let newInterpolate = null;
-
-        if (v > 0) {
-            newInterpolate = ballAngleRef.current.interpolate({
-                inputRange: [0, 1],
-                outputRange: ['0deg', '360deg'],
-            })
-        }
-        else if (v < 0) {
-            newInterpolate = ballAngleRef.current.interpolate({
-                inputRange: [0, 1],
-                outputRange: ['360deg', '0deg'],
-            })
-        }
-        else {
-            newInterpolate = ballAngleRef.current.interpolate({
-                inputRange: [0, 1],
-                outputRange: ['0deg', '0deg'],
-            });    
-        }
-        return newInterpolate;
-    }
-
-    const ballRotationInterpolate = chooseRotationInterpolate(velocityX);
-
+    const ballRotationInterpolate = chooseRotationInterpolate();
     const [ballRotationStyle, setBallRotationStyle] = useState([{
-        transform: [
-            {rotate: ballRotationInterpolate},
-        ],
-      }]);
-
-      const choosePositionInterpolate = (v) => {
-        const startX = ballPosX;
-        const endX = startX + v;
-        const result = ballPosRef.current.interpolate({
-            inputRange: [0, 1],
-            outputRange: [startX, endX],
-        });   
-        return result;
-    }
-
-    const updateBallPosX = (v) => {
-        console.log("v: ", v);
-        console.log("ballPosX 1: ", ballPosX);
-        setBallPosX(ballPosX + v);
-        console.log("ballPosX 2: ", ballPosX); 
-    }
-
-    const ballPositionInterpolate = choosePositionInterpolate(velocityX);
-
+      transform: [
+          {rotate: ballRotationInterpolate},
+      ],
+    }]);
+  
+    const choosePositionInterpolate = () => {
+      const startX = ballPosX;
+      const endX = startX + velocityX;
+      console.log("choosePositionInterpolate", startX, endX);
+      const result = ballPosRef.current.interpolate({
+          inputRange: [0, 1],
+          outputRange: [startX, endX],
+      });   
+      return result;
+  }
+    const ballPositionInterpolate = choosePositionInterpolate();
     const [ballPositionStyle, setBallPositionStyle] = useState({
-        transform: [
-            {translateX: ballPositionInterpolate},
-        ]
-    });
+      transform: [
+          {translateX: ballPositionInterpolate},
+      ]
+  });
 
-    const updateBallPositionStyle = () => {
-        updateBallPosX(velocityX);
-        setBallPositionStyle ({
-            transform: [
-                {translateX: choosePositionInterpolate(velocityX)},
-            ],
-        });
+    const updateBallPosX = () => {
+        console.log("updateBallPosX " + ballPosX + " + " + velocityX + " = " + (ballPosX + velocityX));
+        // console.log("v: ", velocityX);
+        // console.log("ballPosX 1: ", ballPosX);
+        setBallPosX(ballPosX + velocityX);
+        // console.log("ballPosX 2: ", ballPosX); 
     }
 
     const handlePressRight = () => {
-        stopRotationAnimation();
+        // stopRotationAnimation();
         // stopPosAnimation();
-        console.log("Velocity: ", velocityX);
+        console.log("Velocity: " + velocityX);
         setVelocityX(1);
-        console.log("Velocity2: ", velocityX);
+        console.log("Velocity2: " + velocityX);
         setAccelerationX(1);
-        setBallRotationStyle ([{
-            transform: [
-                {rotate: chooseRotationInterpolate(accelerationX)},
-            ],
-          }]);
-        updateBallPositionStyle();
-        startRotationAnimation();
+        // updateBallPosX();
+        // startRotationAnimation();
         // startPosAnimation();
     }
 
     const handlePressLeft = () => {
-        stopRotationAnimation();
+        // stopRotationAnimation();
         // stopPosAnimation();
-        console.log("Velocity3: ", velocityX);
+        console.log("Velocity3: " + velocityX);
         setVelocityX(-1);
-        console.log("Velocity4: ", velocityX);
+        console.log("Velocity4: " + velocityX);
         setAccelerationX(-1);
-        setBallRotationStyle ([{
-            transform: [
-                {rotate: chooseRotationInterpolate(accelerationX)},
-            ],
-          }]);
-        updateBallPositionStyle();
-        startRotationAnimation();
+        // updateBallPosX();
+        // startRotationAnimation();
         // startPosAnimation();
     }
 
@@ -275,40 +255,67 @@ export const Level1 = ({setLevel, ballPosX, setBallPosX, velocityX, setVelocityX
         easing: Easing.linear,
     }));
 
-    const posAnim = Animated.timing(ballPosRef.current, {
+    const posAnim = Animated.loop(Animated.timing(ballPosRef.current, {
         toValue: 1,
         duration: 1000,
         useNativeDriver: true,
         easing: Easing.linear,
-    });
+    }));
 
     const startRotationAnimation = () => {
+        console.log("startRotationAnimation");
         rotationAnim.start(
             () => {}
         );    
     }
     const stopRotationAnimation = () =>{
+        console.log("stopRotationAnimation");
         ballAngleRef.current.setValue(0);
         rotationAnim.stop();
     }
 
     const startPosAnimation = () => {
+        console.log("startPosAnimation");
         posAnim.start(
             () => {
-                console.log("looping posAnim");
-                updateBallPositionStyle();
-                startPosAnimation();
+                // console.log("looping posAnim");
+                // updateBallPosX();
+                // startPosAnimation();
             }
         );    
     }
-    const stopPosAnimation = () =>{
+    const stopPosAnimation = () => {
         ballPosRef.current.setValue(0);
         posAnim.stop();
     }
 
     useEffect(() => {
         startPosAnimation();
+        startRotationAnimation();
+
+        setInterval(() => {
+            console.log("interval");
+            updateBallPosX();
+        }, 1000);
     }, []);
+
+    useEffect(() => {
+        setBallRotationStyle ([{
+            transform: [
+                {rotate: chooseRotationInterpolate()},
+            ],
+        }]);
+        console.log("setting ballposx from setrotationstyle");
+        updateBallPosX();
+    }, [velocityX]);
+
+    useEffect(() => {
+        setBallPositionStyle ({
+            transform: [
+                {translateX: choosePositionInterpolate()},
+            ],
+        });
+    }, [ballPosX, velocityX]);
 
     return (
         <>
