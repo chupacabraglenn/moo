@@ -126,7 +126,7 @@ export const Level1 = ({setLevel}) => {
     const choosePositionInterpolate = () => {
       const startX = ballProps.posX;
       const endX = startX + ballProps.velocityX;
-      console.log("choosePositionInterpolate", startX, endX);
+      console.log("choosePositionInterpolate", startX, endX, new Date().getTime());
       const result = ballPosRef.current.interpolate({
           inputRange: [0, 1],
           outputRange: [startX, endX],
@@ -146,15 +146,30 @@ export const Level1 = ({setLevel}) => {
         });
     }
 
+
     const handlePressRight = () => {
-        setBallProps({...ballProps, velocityX: 10, accelerationX: 1});
+        setBallProps({...ballProps, velocityX: 30, accelerationX: 1});
     }
 
+    // const handlePressRight = () => {
+    //     handlePressOut();
+    //     if (handlePressOut == false) {
+    //         console.log("hi");
+    //         setInterval(() => {
+    //             console.log(accelerationX);
+    //             setBallProps({...ballProps, accelerationX: 1});
+    //             setBallProps({...ballProps, velocityX: velocityX + accelerationX});
+    //             handlePressRight();
+    //         }, 100);
+    //     }
+    // }
+
     const handlePressLeft = () => {
-        setBallProps({...ballProps, velocityX: -10, accelerationX: -1});
+        setBallProps({...ballProps, velocityX: -30, accelerationX: -1});
     }
 
     const handlePressOut = () => {
+        return false;
         // if (velocity > 0) {
         //     velocity = Math.max(0, velocity - 0.01);
         //     handlePressOut();
@@ -192,22 +207,22 @@ export const Level1 = ({setLevel}) => {
     const milkContact = () => {
 
         const cowSpace = {
-            left: ballPosRef.current,
-            right: ballPosRef.current + 163,
+            left: ballProps.posX,
+            right: ballProps.posX + 163,
             bottom: 37,
             top: 200 // + ballLeft.y
         }
 
         const milkSpace = {
-            left: 750,
-            right: 810,
+            left: 600,
+            right: 650,
             bottom: 50,
             top: 170
         }
 
         if (cowSpace.right >= milkSpace.left  && cowSpace.left <= milkSpace.right &&
             cowSpace.bottom <= milkSpace.top && cowSpace.top >= milkSpace.bottom) {
-            //setLevel(2);
+            setLevel(2);
         }
     }
 
@@ -221,7 +236,7 @@ export const Level1 = ({setLevel}) => {
     const posAnim = Animated.loop(Animated.timing(ballPosRef.current, {
         toValue: 1,
         duration: 1000,
-        useNativeDriver: true,
+        useNativeDriver: false,
         easing: Easing.linear,
     }));
 
@@ -236,6 +251,8 @@ export const Level1 = ({setLevel}) => {
             () => {}
         );    
     }
+
+    milkContact();
 
     useEffect(() => {
         startPosAnimation();
