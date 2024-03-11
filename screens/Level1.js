@@ -8,19 +8,40 @@ export const Level1 = ({setLevel}) => {
 
     const [ballProps, setBallProps] = useState({
         posX: 0,
-        velocityX: 0,
-        accelerationX: 0
+        velocityX: 0
     });
 
+    const [accelerationInterval, setAccelerationInterval] = useState(null);
+
     const handlePressRight = () => {
-        setBallProps({...ballProps, velocityX: 30, accelerationX: 1});
+        if (accelerationInterval) {
+            clearInterval(accelerationInterval);
+            setAccelerationInterval(null);
+        }
+        setAccelerationInterval(setInterval(() => {
+            setBallProps((oldVal) => {
+                return {...oldVal, velocityX: oldVal.velocityX + 2};
+            })
+        }, 100));
     }
 
     const handlePressLeft = () => {
-        setBallProps({...ballProps, velocityX: -30, accelerationX: -1});
+        if (accelerationInterval) {
+            clearInterval(accelerationInterval);
+            setAccelerationInterval(null);
+        }
+        setAccelerationInterval(setInterval(() => {
+            setBallProps((oldVal) => {
+                return {...oldVal, velocityX: oldVal.velocityX - 2};
+            })
+        }, 100));
     }
 
     const handlePressOut = () => {
+        if (accelerationInterval) {
+            clearInterval(accelerationInterval);
+            setAccelerationInterval(null);
+        }
         return false;
         // if (velocity > 0) {
         //     velocity = Math.max(0, velocity - 0.01);
