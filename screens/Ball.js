@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { StyleSheet, View, Image, TouchableOpacity, Animated, Easing } from 'react-native';
 
-export const Ball = ({ballProps, setBallProps}) => {
+export const Ball = ({ballProps, setBallProps, isTouchingFloor}) => {
 
     const BallStyles = StyleSheet.create({
     
@@ -69,7 +69,16 @@ export const Ball = ({ballProps, setBallProps}) => {
 
     const updateBallPosX = () => {
         setBallProps((oldVal) => {
-            return {...oldVal, posX: oldVal.posX + oldVal.velocityX};
+            let newVelocityX = oldVal.velocityX;
+            if (isTouchingFloor()) {
+                if (newVelocityX > 0) {
+                    newVelocityX -= 5;
+                }
+                else if (newVelocityX < 0) {
+                    newVelocityX += 5;
+                }
+            }
+            return {...oldVal, posX: oldVal.posX + oldVal.velocityX, velocityX: newVelocityX};
         });
     }
 

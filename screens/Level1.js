@@ -56,6 +56,13 @@ export const Level1 = ({setLevel}) => {
     //     }
     }
 
+    const isTouchingFloor = () => {
+        return true;
+        // if (ballProps.posY == 50) {
+
+        // }
+    }
+
     const Level1Styles = StyleSheet.create({
         main: {
             position: 'absolute',
@@ -151,7 +158,7 @@ export const Level1 = ({setLevel}) => {
             />
         </View>
       
-        <Ball ballProps = {ballProps} setBallProps = {setBallProps}/>
+        <Ball ballProps = {ballProps} setBallProps = {setBallProps} isTouchingFloor = {isTouchingFloor}/>
 
         <Image
             style = {Level1Styles.milk}
